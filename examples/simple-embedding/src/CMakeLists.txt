@@ -13,7 +13,6 @@ set(PYBIND11_PYTHON_VERSION 3.8)
 
 find_package(pybind11 REQUIRED)
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
-message(STATUS "pybind11_INCLUDE_DIRS: ${pybind11_INCLUDE_DIRS}")
 include_directories(${pybind11_INCLUDE_DIRS} ${Python_SITELIB}/monilog/include)
 
 # EXECUTABLE simpleembedding
