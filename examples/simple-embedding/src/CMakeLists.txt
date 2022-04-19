@@ -11,8 +11,9 @@ project(monilog CXX)
 set(CMAKE_VERBOSE_MAKEFILE FALSE)
 set(PYBIND11_PYTHON_VERSION 3.8)
 
-find_package(pybind11 REQUIRED)
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
+set(pybind11_DIR "${Python_SITELIB}/pybind11/share/cmake/pybind11")
+find_package(pybind11 REQUIRED)
 include_directories(${pybind11_INCLUDE_DIRS} ${Python_SITELIB}/monilog/include)
 
 # EXECUTABLE simpleembedding
