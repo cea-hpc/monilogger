@@ -2,12 +2,14 @@ import os
 import re
 import subprocess
 import sys
+from sysconfig import get_paths
 
 from pybind11 import get_cmake_dir
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import Extension, find_packages, setup
+from distutils import ccompiler
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 # Convert distutils Windows platform specifiers to CMake -A arguments
 PLAT_TO_CMAKE = {
@@ -110,29 +112,30 @@ class CMakeBuild(build_ext):
         subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=build_temp)
 
 ext_modules = [
-    CMakeExtension("monilog._monilog", sourcedir="src")
+    CMakeExtension("monilogger._monilogger", sourcedir="src/api")
 ]
 
 # ext_modules = [
-#     Pybind11Extension("monilog._monilog",
-#         ["src/MoniLog.cc"],
+#     Pybind11Extension("monilogger._monilogger",
+#         ["src/MoniLogger.cc"],
+#         include_dirs = ["src/monilogger/include"],
 #         define_macros = [('VERSION_INFO', __version__)],
 #         cxx_std=17
 #         ),
 # ]
 
 setup(
-    name="monilog",
+    name="monilogger",
     version=__version__,
     author="Dorian Leroy",
     author_email="dorian.leroy@cea.fr",
-    url="https://github.com/cea-hpc/monilog",
+    url="https://github.com/cea-hpc/monilogger",
     description="A Python logging and monitoring toolbox for C++ applications.",
     long_description="",
-    packages=["monilog"],
-    package_dir={"": "src"},
+    packages=["monilogger"],
+    package_dir={"": "src/api"},
     package_data={
-        "monilog": ["include/MoniLog.h"],
+        "monilogger": ["include/MoniLogger.h"],
     },
     ext_modules=ext_modules,
     cmdclass={"build_ext": CMakeBuild},

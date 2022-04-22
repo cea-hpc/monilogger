@@ -1,5 +1,5 @@
 import functools
-import monilog._monilog as mnlg
+import monilogger._monilogger as mnlg
 
 __all__ = ('register', 'register_monilogger', 'define_event')
 

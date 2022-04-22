@@ -1,6 +1,6 @@
 import unittest
-import monilog
-import monilog._monilog as mnlg
+import monilogger
+import monilogger._monilogger as mnlg
 
 class MyOtherEvent:
     pass
@@ -11,35 +11,35 @@ class MainTest(unittest.TestCase):
         self.result = 0
 
     def test_undefined_event(self):
-        @monilog.register("MyEvent")
-        def monilogger(ctx):
+        @monilogger.register("MyEvent")
+        def test_monilogger(ctx):
             self.result = self.result + 1
 
         mnlg.define_basic_events({"MyEvent":0})
-        mnlg.emit_event("MyEvent", mnlg.MoniLogExecutionContext())
+        mnlg.emit_event("MyEvent", mnlg.MoniLoggerExecutionContext())
 
         self.assertEqual(self.result, 1)
 
     def test_class_event(self):
         mnlg.define_basic_events({"MyOtherEvent":0})
 
-        @monilog.register(MyOtherEvent)
-        def monilogger(ctx):
+        @monilogger.register(MyOtherEvent)
+        def test_monilogger(ctx):
             self.result = self.result + 1
 
-        mnlg.emit_event("MyOtherEvent", mnlg.MoniLogExecutionContext())
+        mnlg.emit_event("MyOtherEvent", mnlg.MoniLoggerExecutionContext())
 
         self.assertEqual(self.result, 1)
 
     def test_composite_event(self):
         mnlg.define_basic_events({"MyEvent":0, "MyOtherEvent":1})
-        monilog.define_event("MyCompositeEvent", ["MyEvent", "MyOtherEvent"])
+        monilogger.define_event("MyCompositeEvent", ["MyEvent", "MyOtherEvent"])
 
-        @monilog.register("MyCompositeEvent")
-        def monilogger(ctx):
+        @monilogger.register("MyCompositeEvent")
+        def test_monilogger(ctx):
             self.result = self.result + 1
 
-        mnlg.emit_event("MyCompositeEvent", mnlg.MoniLogExecutionContext())
+        mnlg.emit_event("MyCompositeEvent", mnlg.MoniLoggerExecutionContext())
         
         self.assertEqual(self.result, 1)
 

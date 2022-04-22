@@ -1,5 +1,5 @@
-#ifndef __MONILOG_H_
-#define __MONILOG_H_
+#ifndef __MONILOGGER_H_
+#define __MONILOGGER_H_
 
 #include <fstream>
 #include <iomanip>
@@ -14,15 +14,15 @@
 
 namespace py = pybind11;
 
-namespace MoniLog
+namespace MoniLogger
 {
-    struct MoniLogExecutionContext
+    struct MoniLoggerExecutionContext
     {
-        std::string name = "MoniLogExecutionContext";
+        std::string name = "MoniLoggerExecutionContext";
 
-        MoniLogExecutionContext() {}
-        MoniLogExecutionContext(std::string name) : name(name) {}
-        virtual ~MoniLogExecutionContext() = default;
+        MoniLoggerExecutionContext() {}
+        MoniLoggerExecutionContext(std::string name) : name(name) {}
+        virtual ~MoniLoggerExecutionContext() = default;
     };
 
     void register_composite_event(std::string event_name, std::list<std::string> triggering_events);
@@ -30,6 +30,8 @@ namespace MoniLog
     void register_composite_events(std::map<std::string, std::list<std::string>> composite_events);
 
     void register_base_events(std::map<std::string, size_t> events);
+
+    std::list<std::string> get_base_events();
 
     void clear_events();
 
@@ -43,12 +45,12 @@ namespace MoniLog
 
     std::list<py::function> get_registered_moniloggers(size_t event);
 
-    void trigger(std::string event_name, std::shared_ptr<MoniLogExecutionContext> scope);
+    void trigger(std::string event_name, std::shared_ptr<MoniLoggerExecutionContext> scope);
 
-    void trigger(size_t event_id, std::shared_ptr<MoniLogExecutionContext> scope);
+    void trigger(size_t event_id, std::shared_ptr<MoniLoggerExecutionContext> scope);
 
     __attribute__((visibility("default")))
-    void bootstrap_monilog(std::vector<std::string> python_path,
+    void bootstrap_monilogger(std::vector<std::string> python_path,
         std::vector<std::string> python_scripts,
         std::string interface_module,
         std::function<void (py::module_, py::object)> interface_module_initializer);

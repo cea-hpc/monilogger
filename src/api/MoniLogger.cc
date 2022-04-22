@@ -1,8 +1,8 @@
-#include <MoniLog.h>
+#include <MoniLogger.h>
 
 namespace py = pybind11;
 
-namespace MoniLog
+namespace MoniLogger
 {
     namespace
     {
@@ -135,7 +135,8 @@ namespace MoniLog
     void register_base_events(std::map<std::string, size_t> events)
     {
         size_t size(0);
-        for (auto it = events.begin(); it != events.end(); ++it) {
+        for (auto it = events.begin(); it != events.end(); ++it)
+        {
             size = std::max(size, it->second);
         }
         size++;
@@ -156,6 +157,16 @@ namespace MoniLog
             }
             pending_moniloggers.erase(event_name);
         }
+    }
+
+    std::list<std::string> get_base_events()
+    {
+        std::list<std::string> result;
+        for (auto evt : base_events)
+        {
+            result.emplace_back(evt.first);
+        }
+        return result;
     }
 
     void clear_events()
@@ -217,7 +228,7 @@ namespace MoniLog
         return registered_moniloggers[event];
     }
 
-    void trigger(std::string event_name, std::shared_ptr<MoniLogExecutionContext> context)
+    void trigger(std::string event_name, std::shared_ptr<MoniLoggerExecutionContext> context)
     {
         for (py::function monilogger : event_to_moniloggers[event_name])
         {
@@ -225,7 +236,7 @@ namespace MoniLog
         }
     }
 
-    void trigger(size_t event_id, std::shared_ptr<MoniLogExecutionContext> context)
+    void trigger(size_t event_id, std::shared_ptr<MoniLoggerExecutionContext> context)
     {
         std::list<py::function> moniloggers = registered_moniloggers[event_id];
         for (py::function monilogger : moniloggers)
@@ -234,7 +245,7 @@ namespace MoniLog
         }
     }
 
-    void bootstrap_monilog(std::vector<std::string> python_path,
+    void bootstrap_monilogger(std::vector<std::string> python_path,
         std::vector<std::string> python_scripts,
         std::string interface_module,
         std::function<void (py::module_, py::object)> interface_module_initializer)
@@ -248,13 +259,13 @@ namespace MoniLog
             append_to_path(python_path[i]);
         }
 
-        // // Initializing the MoniLog Python module.
-        py::module_ monilogModule = py::module_::import("monilog");
-        py::module_ monilogInternalModule = py::module_::import("monilog._monilog");
+        // // Initializing the MoniLogger Python module.
+        py::module_ moniloggerModule = py::module_::import("monilogger");
+        py::module_ moniloggerInternalModule = py::module_::import("monilogger._monilogger");
 
         // // Initializing the user-provided interface module exposing C++ variables to Python scripts.
         py::module_ interface_py_module = py::module_::import(interface_module.c_str());
-        py::object ctx = (py::object) monilogInternalModule.attr("MoniLogExecutionContext");
+        py::object ctx = (py::object) moniloggerInternalModule.attr("MoniLoggerExecutionContext");
         interface_module_initializer(interface_py_module, ctx);
 
         // Loading the user-provided Python scripts containing monilogger definitions.
@@ -263,6 +274,21 @@ namespace MoniLog
             py::module_::import(python_scripts[i].c_str());
         }
     }
+}
+
+PYBIND11_MODULE(_monilogger, m) {
+    m.attr("__name__") = "monilogger._monilogger";
+	py::class_<MoniLogger::MoniLoggerExecutionContext, std::shared_ptr<MoniLogger::MoniLoggerExecutionContext>>(m, "MoniLoggerExecutionContext")
+        .def(py::init<>());
+    m.def("register", &MoniLogger::register_monilogger);
+    m.def("stop", &MoniLogger::unregister_monilogger);
+    m.def("define_event", &MoniLogger::register_composite_event);
+    m.def("define_basic_events", &MoniLogger::register_base_events);
+    m.def("get_basic-events", &MoniLogger::get_base_events);
+    m.def("emit_event", [](std::string event_name, std::shared_ptr<MoniLogger::MoniLoggerExecutionContext> scope)
+    {
+        MoniLogger::trigger(event_name, scope);
+    });
 }
 
 

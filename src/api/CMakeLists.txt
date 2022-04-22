@@ -8,22 +8,20 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -O3")
 
 # PROJECT
-project(monilog CXX)
+project(monilogger CXX)
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
-set(PYBIND11_PYTHON_VERSION 3.8)
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 set(pybind11_DIR "${Python_SITELIB}/pybind11/share/cmake/pybind11")
 find_package(pybind11 REQUIRED)
-include_directories(${pybind11_INCLUDE_DIRS} monilog/include)
+include_directories(${pybind11_INCLUDE_DIRS} monilogger/include)
 
-add_library(monilog SHARED MoniLog.cc)
-target_link_libraries(monilog ${PYTHON_LIBRARIES} pybind11::embed)
-
+add_library(monilogger SHARED MoniLogger.cc)
+target_link_libraries(monilogger ${PYTHON_LIBRARIES} pybind11::embed)
 
 # Python extension
-pybind11_add_module(_monilog monilog_module.cc)
-set_target_properties(_monilog PROPERTIES
+pybind11_add_module(_monilogger monilogger_module.cc)
+set_target_properties(_monilogger PROPERTIES
         BUILD_WITH_INSTALL_RPATH FALSE
         LINK_FLAGS "-Wl,-rpath,$ORIGIN/")
-target_link_libraries(_monilog PUBLIC monilog)
+target_link_libraries(_monilogger PUBLIC monilogger)
