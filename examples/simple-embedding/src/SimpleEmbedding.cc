@@ -1,17 +1,17 @@
-#include <MoniLog.h>
+#include <MoniLogger.h>
 #include <filesystem>
 
 PYBIND11_EMBEDDED_MODULE(example_interface, m) { }
 
 namespace fs = std::filesystem;
 
-struct SimpleExecutionContext : MoniLog::MoniLogExecutionContext
+struct SimpleExecutionContext : MoniLogger::MoniLoggerExecutionContext
 {
 	const pybind11::object get_foo() const { if (foo != nullptr) return pybind11::cast(*foo); else return pybind11::cast<pybind11::none>(Py_None); }
 	
 	double *foo = nullptr;
 	
-	using MoniLog::MoniLogExecutionContext::MoniLogExecutionContext;
+	using MoniLogger::MoniLoggerExecutionContext::MoniLoggerExecutionContext;
 };
 
 int main()
@@ -46,35 +46,35 @@ int main()
     };
 
     // Define base execution events emitted by the application, to which moniloggers can register.
-    MoniLog::register_base_events({
+    MoniLogger::register_base_events({
         {"SomeEvent", 0},
         {"SomeOtherEvent", 1}
     });
     
     // Define a composite event, emitted when either of its triggering events are emitted.
-    MoniLog::register_composite_event("SomeCompositeEvent", {"SomeEvent", "SomeOtherEvent"});
+    MoniLogger::register_composite_event("SomeCompositeEvent", {"SomeEvent", "SomeOtherEvent"});
 
     // Instantiating the execution context accessible from Python.
     std::shared_ptr<SimpleExecutionContext> ctx(new SimpleExecutionContext("SimpleExecutionContext"));
 
-    // Bootstrapping monilog, consisting mainly of starting the Python interpreter, initializing
-    // the monilog module, and evaluating the provided scripts.
-    MoniLog::bootstrap_monilog(python_path, python_scripts, interface_module, interface_module_initializer);
+    // Bootstrapping monilogger, consisting mainly of starting the Python interpreter, initializing
+    // the monilogger module, and evaluating the provided scripts.
+    MoniLogger::bootstrap_monilogger(python_path, python_scripts, interface_module, interface_module_initializer);
 
     double foo(0.0);
     ctx->foo = &foo;
 
     // Emitting some base events, triggering the registered moniloggers.
-    MoniLog::trigger(0, ctx);
+    MoniLogger::trigger(0, ctx);
 
     foo = 17.0;
 
-    MoniLog::trigger(1, ctx);
+    MoniLogger::trigger(1, ctx);
 
     foo = 42.0;
 
     // Emitting a composite event (can also emit base event by name).
-    MoniLog::trigger("SomeCompositeEvent", ctx);
+    MoniLogger::trigger("SomeCompositeEvent", ctx);
 
     foo = 17.0;
 

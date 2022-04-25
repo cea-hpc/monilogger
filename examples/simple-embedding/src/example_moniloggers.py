@@ -1,4 +1,4 @@
-from monilog import *
+from monilogger import *
 
 @register("SomeEvent")
 def monilogger1(ctx):

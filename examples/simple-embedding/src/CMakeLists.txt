@@ -6,7 +6,7 @@ set(CMAKE_CXX_COMPILER /usr/bin/g++)
 set(CMAKE_CXX_STANDARD 17)
 
 # PROJECT
-project(monilog CXX)
+project(simpleembedding CXX)
 
 set(CMAKE_VERBOSE_MAKEFILE FALSE)
 set(PYBIND11_PYTHON_VERSION 3.8)
@@ -14,11 +14,11 @@ set(PYBIND11_PYTHON_VERSION 3.8)
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 set(pybind11_DIR "${Python_SITELIB}/pybind11/share/cmake/pybind11")
 find_package(pybind11 REQUIRED)
-include_directories(${pybind11_INCLUDE_DIRS} ${Python_SITELIB}/monilog/include)
+include_directories(${pybind11_INCLUDE_DIRS} ${Python_SITELIB}/monilogger/include)
 
 # EXECUTABLE simpleembedding
 add_executable(simpleembedding SimpleEmbedding.cc)
 target_include_directories(simpleembedding PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-add_library(moniloglib SHARED IMPORTED)
-set_property(TARGET moniloglib PROPERTY IMPORTED_LOCATION ${Python_SITELIB}/monilog/libmonilog.so)
-target_link_libraries(simpleembedding PUBLIC pybind11::embed moniloglib)
+add_library(moniloggerlib SHARED IMPORTED)
+set_property(TARGET moniloggerlib PROPERTY IMPORTED_LOCATION ${Python_SITELIB}/monilogger/libmonilogger.so)
+target_link_libraries(simpleembedding PUBLIC pybind11::embed moniloggerlib)
