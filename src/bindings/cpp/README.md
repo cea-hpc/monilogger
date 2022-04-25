@@ -1,6 +1,6 @@
-# **Using monilogger in your C++ app**
+# Using monilogger in your C++ app
 
-## **Defining the execution events**
+## Defining the execution events
 
 ```cpp
 MoniLogger::register_base_events({
@@ -13,7 +13,7 @@ MoniLogger::register_base_events({
 MoniLogger::register_composite_event("SomeCompositeEvent", {"SomeEvent", "SomeOtherEvent"});
 ```
 
-## **Defining the exposed execution context**
+## Defining the exposed execution context
 
 ```cpp
 struct MyExecutionContext : MoniLogger::MoniLoggerExecutionContext
@@ -27,7 +27,7 @@ struct MyExecutionContext : MoniLogger::MoniLoggerExecutionContext
 };
 ```
 
-### **Exposing local variables**
+### Exposing local variables
 
 ```cpp
 struct MyExecutionContext : MoniLogger::MoniLoggerExecutionContext
@@ -41,7 +41,7 @@ struct MyExecutionContext : MoniLogger::MoniLoggerExecutionContext
 };
 ```
 
-### **Exposing class members**
+### Exposing class members
 
 ```cpp
 struct MyExecutionContext : MoniLogger::MoniLoggerExecutionContext
@@ -60,7 +60,7 @@ struct MyExecutionContext : MoniLogger::MoniLoggerExecutionContext
 };
 ```
 
-### **Exposing the context as a Python class**
+### Exposing the context as a Python class
 
 ```cpp
 // Initialization function for the interface module.
@@ -106,6 +106,11 @@ std::function<void (pybind11::module_, pybind11::object)> interface_module_initi
     // ...
 ```
 
+## Starting the Python interpreter and initializing monilogger
+
+```cpp
+MoniLogger::initialize_monilogger(python_path, python_scripts, interface_module, interface_module_initializer);
+```
 
 ## Triggering execution events
 

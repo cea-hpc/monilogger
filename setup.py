@@ -9,7 +9,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import Extension, find_packages, setup
 from distutils import ccompiler
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 # Convert distutils Windows platform specifiers to CMake -A arguments
 PLAT_TO_CMAKE = {
@@ -124,6 +124,10 @@ ext_modules = [
 #         ),
 # ]
 
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
 setup(
     name="monilogger",
     version=__version__,
@@ -131,7 +135,8 @@ setup(
     author_email="dorian.leroy@cea.fr",
     url="https://github.com/cea-hpc/monilogger",
     description="A Python logging and monitoring toolbox for C++ applications.",
-    long_description="",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     packages=["monilogger"],
     package_dir={"": "src/api"},
     package_data={

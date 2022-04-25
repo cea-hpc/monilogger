@@ -50,7 +50,7 @@ namespace MoniLogger
     void trigger(size_t event_id, std::shared_ptr<MoniLoggerExecutionContext> scope);
 
     __attribute__((visibility("default")))
-    void bootstrap_monilogger(std::vector<std::string> python_path,
+    void initialize_monilogger(std::vector<std::string> python_path,
         std::vector<std::string> python_scripts,
         std::string interface_module,
         std::function<void (py::module_, py::object)> interface_module_initializer);

@@ -59,7 +59,7 @@ int main()
 
     // Bootstrapping monilogger, consisting mainly of starting the Python interpreter, initializing
     // the monilogger module, and evaluating the provided scripts.
-    MoniLogger::bootstrap_monilogger(python_path, python_scripts, interface_module, interface_module_initializer);
+    MoniLogger::initialize_monilogger(python_path, python_scripts, interface_module, interface_module_initializer);
 
     double foo(0.0);
     ctx->foo = &foo;
