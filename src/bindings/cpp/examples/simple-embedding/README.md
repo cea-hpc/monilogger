@@ -1,4 +1,4 @@
-* Simple Embedding Example
+# Simple Embedding Example
 
 This example illustrates how to integrate monilogger in your C++ application.
 
