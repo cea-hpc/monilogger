@@ -218,12 +218,12 @@ namespace MoniLogger
         }
     }
 
-    inline bool has_registered_moniloggers(size_t event)
+    bool has_registered_moniloggers(size_t event)
     {
         return registered_moniloggers[event].empty();
     }
 
-    inline std::list<py::function> get_registered_moniloggers(size_t event)
+    std::list<py::function> get_registered_moniloggers(size_t event)
     {
         return registered_moniloggers[event];
     }

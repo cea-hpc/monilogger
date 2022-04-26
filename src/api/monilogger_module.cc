@@ -6,9 +6,9 @@ PYBIND11_MODULE(_monilogger, m) {
         .def(py::init<>());
     m.def("register", &MoniLogger::register_monilogger);
     m.def("stop", &MoniLogger::unregister_monilogger);
-    m.def("define_event", &MoniLogger::register_composite_event);
-    m.def("define_basic_events", &MoniLogger::register_base_events);
-    m.def("get_basic_events", &MoniLogger::get_base_events);
+    m.def("define_composite_event", &MoniLogger::register_composite_event);
+    m.def("define_base_events", &MoniLogger::register_base_events);
+    m.def("get_base_events", &MoniLogger::get_base_events);
     m.def("emit_event", [](std::string event_name, std::shared_ptr<MoniLogger::MoniLoggerExecutionContext> scope)
     {
         MoniLogger::trigger(event_name, scope);

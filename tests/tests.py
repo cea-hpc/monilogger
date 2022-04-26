@@ -15,13 +15,13 @@ class MainTest(unittest.TestCase):
         def test_monilogger(ctx):
             self.result = self.result + 1
 
-        mnlg.define_basic_events({"MyEvent":0})
+        mnlg.define_base_events({"MyEvent":0})
         mnlg.emit_event("MyEvent", mnlg.MoniLoggerExecutionContext())
 
         self.assertEqual(self.result, 1)
 
     def test_class_event(self):
-        mnlg.define_basic_events({"MyOtherEvent":0})
+        mnlg.define_base_events({"MyOtherEvent":0})
 
         @monilogger.register(MyOtherEvent)
         def test_monilogger(ctx):
@@ -32,7 +32,7 @@ class MainTest(unittest.TestCase):
         self.assertEqual(self.result, 1)
 
     def test_composite_event(self):
-        mnlg.define_basic_events({"MyEvent":0, "MyOtherEvent":1})
+        mnlg.define_base_events({"MyEvent":0, "MyOtherEvent":1})
         monilogger.define_event("MyCompositeEvent", ["MyEvent", "MyOtherEvent"])
 
         @monilogger.register("MyCompositeEvent")
