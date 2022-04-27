@@ -220,7 +220,7 @@ namespace MoniLogger
 
     bool has_registered_moniloggers(size_t event)
     {
-        return registered_moniloggers[event].empty();
+        return !registered_moniloggers[event].empty();
     }
 
     std::list<py::function> get_registered_moniloggers(size_t event)
