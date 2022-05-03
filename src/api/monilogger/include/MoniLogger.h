@@ -19,11 +19,14 @@ namespace MoniLogger
     struct MoniLoggerExecutionContext
     {
         std::string name = "MoniLoggerExecutionContext";
+        const pybind11::object get_name() const { return pybind11::cast(name); }
 
         MoniLoggerExecutionContext() {}
         MoniLoggerExecutionContext(std::string name) : name(name) {}
         virtual ~MoniLoggerExecutionContext() = default;
     };
+
+    MoniLoggerExecutionContext create_context(std::string name) { return MoniLoggerExecutionContext(name); }
 
     void register_composite_event(std::string event_name, std::list<std::string> triggering_events);
 

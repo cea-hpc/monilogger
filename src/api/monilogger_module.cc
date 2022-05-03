@@ -3,7 +3,9 @@
 PYBIND11_MODULE(_monilogger, m) {
     m.attr("__name__") = "monilogger._monilogger";
 	py::class_<MoniLogger::MoniLoggerExecutionContext, std::shared_ptr<MoniLogger::MoniLoggerExecutionContext>>(m, "MoniLoggerExecutionContext")
-        .def(py::init<>());
+        .def(py::init<>())
+        .def(py::init(&MoniLogger::create_context))
+        .def_property_readonly("name", &MoniLogger::MoniLoggerExecutionContext::get_name);
     m.def("register", &MoniLogger::register_monilogger);
     m.def("stop", &MoniLogger::unregister_monilogger);
     m.def("define_composite_event", &MoniLogger::register_composite_event);
