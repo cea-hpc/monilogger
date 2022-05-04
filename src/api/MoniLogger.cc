@@ -245,6 +245,11 @@ namespace MoniLogger
         }
     }
 
+    MoniLoggerExecutionContext create_context(std::string name)
+    {
+        return MoniLoggerExecutionContext(name);
+    }
+
     void initialize_monilogger(std::vector<std::string> python_path,
         std::vector<std::string> python_scripts,
         std::string interface_module,

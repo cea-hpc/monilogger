@@ -26,7 +26,7 @@ namespace MoniLogger
         virtual ~MoniLoggerExecutionContext() = default;
     };
 
-    MoniLoggerExecutionContext create_context(std::string name) { return MoniLoggerExecutionContext(name); }
+    MoniLoggerExecutionContext create_context(std::string name);
 
     void register_composite_event(std::string event_name, std::list<std::string> triggering_events);
 
