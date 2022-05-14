@@ -10,20 +10,20 @@ namespace MoniLogger
         std::map<std::string, std::list<py::function>> event_to_moniloggers;
         std::map<std::string, std::list<py::function>> pending_moniloggers;
         std::map<std::string, size_t> base_events;
-        std::map<std::string, std::list<std::string>> composite_events;
+        std::map<std::string, std::list<std::string>> complex_events;
         std::shared_ptr<py::scoped_interpreter> guard;
 
         bool is_event_registered(std::string event_name)
         {
             auto base_event = base_events.find(event_name);
-            auto composite_event = composite_events.find(event_name);
-            return composite_event != composite_events.end() || base_event != base_events.end();
+            auto complex_event = complex_events.find(event_name);
+            return complex_event != complex_events.end() || base_event != base_events.end();
         }
 
         std::vector<size_t> get_event_ids(std::string event_name)
         {
-            auto triggering_events = composite_events.find(event_name);
-            if (triggering_events != composite_events.end())
+            auto triggering_events = complex_events.find(event_name);
+            if (triggering_events != complex_events.end())
             {
                 std::vector<size_t> result;
                 for (auto triggering_event_name : triggering_events->second)
@@ -48,54 +48,7 @@ namespace MoniLogger
         }
     }
 
-    // /**
-    //  * @brief Registers the event if it was not registered already.
-    //  * @throws std::invalid_argument If the event is registered as a composite event.
-    //  * 
-    //  * @param event_name name of the base event to register.
-    //  * @return size_t id already associated to the event, whether the event was
-    //  * already registered or not.
-    //  */
-    // size_t register_base_event(std::string event_name)
-    // {
-    //     if (composite_events.find(event_name) == composite_events.end())
-    //     {
-    //         auto id = base_events.find(event_name);
-    //         if (id == base_events.end())
-    //         {
-    //             size_t event_id;
-    //             // If the event is not yet registered
-    //             if (available_event_ids.empty())
-    //             {
-    //                 // If no event id is available, compute a fresh one
-    //                 event_id =  = base_events.size()
-    //                 base_events[event_name] = event_id;
-    //                 // Add the corresponding list of moniloggers
-    //                 registered_moniloggers.emplace_back(std::list<py::function>());
-
-    //             } else {
-    //                 // Otherwise, use the oldest available id
-    //                 event_id = available_event_ids.pop_front();
-    //                 base_events[event_name] = event_id;
-    //                 // Clear the corresponding list of moniloggers (just in case...)
-    //                 registered_moniloggers[id].clear();
-    //             }
-    //             return id;
-    //         }
-    //     } else {
-    //         throw std::invalid_argument(event_name + "is already registered as a composite event.");
-    //     }
-    // }
-
-    /**
-     * @brief Registers the event as a composite event triggered by the provided list of events.
-     * @throws std::invalid_argument If the event to register already exists, or if any of the
-     * listed triggering events does not exist.
-     * 
-     * @param event_name name of the composite event to register.
-     * @param triggering_events events (base or composite) triggering the composite event to register.
-     */
-    void register_composite_event(std::string event_name, std::list<std::string> triggering_events)
+    void register_complex_event(std::string event_name, std::list<std::string> triggering_events)
     {
         if (is_event_registered(event_name))
         {
@@ -114,7 +67,7 @@ namespace MoniLogger
                     throw std::invalid_argument("No event named " + triggering_event + " was found.");
                 }
             }
-            composite_events[event_name] = std::list<std::string>(triggering_events);
+            complex_events[event_name] = std::list<std::string>(triggering_events);
 
             for (auto monilogger : pending_moniloggers[event_name])
             {
@@ -124,38 +77,36 @@ namespace MoniLogger
         }
     }
 
-    void register_composite_events(std::map<std::string, std::list<std::string>> composite_events)
+    void register_complex_events(std::map<std::string, std::list<std::string>> complex_events)
     {
-        for (auto execution_event : composite_events)
+        for (auto execution_event : complex_events)
         {
-            register_composite_event(execution_event.first, execution_event.second);
+            register_complex_event(execution_event.first, execution_event.second);
         }
     }
 
-    void register_base_events(std::map<std::string, size_t> events)
+    size_t register_base_event(std::string event_name)
     {
-        size_t size(0);
-        for (auto it = events.begin(); it != events.end(); ++it)
+        const auto i = base_events.find(event_name);
+        if (i == base_events.end())
         {
-            size = std::max(size, it->second);
-        }
-        size++;
-
-        registered_moniloggers.reserve(size);
-        for (size_t i = 0; i < size; i++)
-        {
-            registered_moniloggers.emplace_back(std::list<py::function>());
-        }
-
-        base_events = std::map<std::string, size_t>(events);
-
-        for (auto const& [event_name, val] : base_events)
-        {
-            for (auto monilogger : pending_moniloggers[event_name])
+            const auto j = complex_events.find(event_name);
+            if (j != complex_events.end())
             {
-                register_monilogger(event_name, monilogger);
+                throw std::invalid_argument("Event " + event_name + " is already registered as a complex event.");
+            } else {
+                const size_t result = base_events.size();
+                base_events[event_name] = result;
+                registered_moniloggers.emplace_back();
+                for (auto monilogger : pending_moniloggers[event_name])
+                {
+                    registered_moniloggers[result].push_back(std::move(monilogger));
+                }
+                pending_moniloggers.erase(event_name);
+                return result;
             }
-            pending_moniloggers.erase(event_name);
+        } else {
+            return i->second;
         }
     }
 
@@ -169,13 +120,6 @@ namespace MoniLogger
         return result;
     }
 
-    void clear_events()
-    {
-        base_events.clear();
-        composite_events.clear();
-        registered_moniloggers.clear();
-    }
-
     void register_monilogger(std::string event_name, py::function monilogger)
     {
         // Retrieve each base event triggering this event.
@@ -184,18 +128,19 @@ namespace MoniLogger
         {
             // If no base event exists yet, the event name has not been declared yet,
             // add the monilogger to the list of pending moniloggers for that event.
-            pending_moniloggers[event_name].emplace_back(monilogger);
+            pending_moniloggers[event_name].push_back(std::move(monilogger));
         } else {
             std::list<py::function> event_moniloggers = event_to_moniloggers[event_name];
             // Make sure a monilogger can only be registered once.
             if (std::find(event_moniloggers.begin(), event_moniloggers.end(), monilogger) == event_moniloggers.end())
             {
                 // Add the monilogger to the list of registered moniloggers for this event name.
-                event_to_moniloggers[event_name].emplace_back(monilogger);
+                event_to_moniloggers[event_name].push_back(std::move(monilogger));
                 for (auto id : ids)
                 {
                     // Add the monilogger to the list of registered moniloggers for each base event.
-                    registered_moniloggers[id].push_back(monilogger);
+                    // TODO: add to pending moniloggers if the base event does not exist yet.
+                    registered_moniloggers[id].push_back(std::move(monilogger));
                 }
             }
             

@@ -12,6 +12,7 @@ void initialize_embedding(std::vector<std::string> python_path, std::vector<std:
             [](pybind11::module_ interface_module, pybind11::object context_class) {
         pybind11::class_<FibonacciExecutionContext, std::shared_ptr<FibonacciExecutionContext>>(interface_module, "FibonacciExecutionContext", context_class)
             // Defining the properties exposed by the FibonacciExecutionContext.
+            .def_property_readonly("n", &FibonacciExecutionContext::get_n)
             .def_property_readonly("current_number", &FibonacciExecutionContext::get_current_number)
             .def_property_readonly("previous_number", &FibonacciExecutionContext::get_previous_number)
             .def_property_readonly("iteration", &FibonacciExecutionContext::get_iteration)
@@ -37,11 +38,11 @@ void initialize_embedding(std::vector<std::string> python_path, std::vector<std:
     };
 
     // Define base execution events emitted by the application, to which moniloggers can register.
-    MoniLogger::register_base_events({
-        {"NewIteration", 0}
-    });
+    MoniLogger::register_base_event(INITIALIZE);
+    MoniLogger::register_base_event(ITERATE);
+    MoniLogger::register_base_event(FINALIZE);
 
-    // Bootstrapping monilogger, consisting mainly of starting the Python interpreter, initializing
+    // Bootstrapping monilogger, consisting of starting the Python interpreter, initializing
     // the monilogger module, and evaluating the provided scripts.
     MoniLogger::initialize_monilogger(python_path, python_scripts, interface_module, interface_module_initializer);
 }

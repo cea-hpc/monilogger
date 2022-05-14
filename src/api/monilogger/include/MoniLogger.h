@@ -28,15 +28,27 @@ namespace MoniLogger
 
     MoniLoggerExecutionContext create_context(std::string name);
 
-    void register_composite_event(std::string event_name, std::list<std::string> triggering_events);
+    /**
+     * @brief Registers the event as a complex event triggered by the provided list of events.
+     * @throws std::invalid_argument If the event to register already exists, or if any of the
+     * listed triggering events does not exist.
+     * 
+     * @param event_name name of the complex event to register.
+     * @param triggering_events events (base or complex) triggering the complex event to register.
+     */
+    void register_complex_event(std::string event_name, std::list<std::string> triggering_events);
 
-    void register_composite_events(std::map<std::string, std::list<std::string>> composite_events);
+    void register_complex_events(std::map<std::string, std::list<std::string>> complex_events);
 
-    void register_base_events(std::map<std::string, size_t> events);
+    /**
+     * @brief Registers the event as a base event.
+     * @throws std::invalid_argument If the event to register already exists.
+     * 
+     * @param event_name name of the base event to register.
+     */
+    size_t register_base_event(std::string event_name);
 
     std::list<std::string> get_base_events();
-
-    void clear_events();
 
     __attribute__((visibility("default")))
     void register_monilogger(std::string event_name, py::function monilogger);

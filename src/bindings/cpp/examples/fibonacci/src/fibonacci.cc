@@ -3,25 +3,31 @@
 
 int fibonacci(int n)
 {
-    std::shared_ptr<FibonacciExecutionContext> ctx(new FibonacciExecutionContext("FibonacciExecutionContext"));
+    auto events = MoniLogger::get_base_events();
 
-    int u = 0;
-    int v = 1;
-    int i = 1;
-    int t = 0;
+    std::shared_ptr<FibonacciExecutionContext> ctx(new FibonacciExecutionContext(n, "FibonacciExecutionContext"));
+
+    MoniLogger::trigger(INITIALIZE, ctx);
+
+    int u(0), v(0), i(0), t(0);
     
     ctx->previous_number = &u;
     ctx->current_number = &v;
     ctx->iteration = &i;
 
-    MoniLogger::trigger(0, ctx);
+    MoniLogger::trigger(ITERATE, ctx);
 
-    for(i = 2; i <= n; i++)
+    v = 1;
+
+    for(i = 1; i <= n; i++)
     {
         t = u + v;
         u = v;
         v = t;
-        MoniLogger::trigger(0, ctx);
+        MoniLogger::trigger(ITERATE, ctx);
     }
+
+    MoniLogger::trigger(FINALIZE, ctx);
+    
     return v;
 }

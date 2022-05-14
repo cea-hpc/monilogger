@@ -25,4 +25,4 @@ def define_event(event, triggering_events):
     event_name = event
   else:
     event_name = event.__qualname__
-  mnlg.define_composite_event(event_name, triggering_events)
+  mnlg.register_complex_event(event_name, triggering_events)

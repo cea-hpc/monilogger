@@ -8,8 +8,8 @@ PYBIND11_MODULE(_monilogger, m) {
         .def_property_readonly("name", &MoniLogger::MoniLoggerExecutionContext::get_name);
     m.def("register", &MoniLogger::register_monilogger);
     m.def("stop", &MoniLogger::unregister_monilogger);
-    m.def("define_composite_event", &MoniLogger::register_composite_event);
-    m.def("define_base_events", &MoniLogger::register_base_events);
+    m.def("register_complex_event", &MoniLogger::register_complex_event);
+    m.def("register_base_event", &MoniLogger::register_base_event);
     m.def("get_base_events", &MoniLogger::get_base_events);
     m.def("emit_event", [](std::string event_name, std::shared_ptr<MoniLogger::MoniLoggerExecutionContext> scope)
     {
