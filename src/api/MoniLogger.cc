@@ -97,10 +97,10 @@ namespace MoniLogger
             } else {
                 const size_t result = base_events.size();
                 base_events[event_name] = result;
-                registered_moniloggers.emplace_back();
+                registered_moniloggers.emplace_back(std::list<py::function>());
                 for (auto monilogger : pending_moniloggers[event_name])
                 {
-                    registered_moniloggers[result].push_back(std::move(monilogger));
+                    registered_moniloggers[result].push_back(monilogger);
                 }
                 pending_moniloggers.erase(event_name);
                 return result;
@@ -120,6 +120,7 @@ namespace MoniLogger
         return result;
     }
 
+    // TODO: use std::shared_ptr(monilogger)?
     void register_monilogger(std::string event_name, py::function monilogger)
     {
         // Retrieve each base event triggering this event.
@@ -128,22 +129,21 @@ namespace MoniLogger
         {
             // If no base event exists yet, the event name has not been declared yet,
             // add the monilogger to the list of pending moniloggers for that event.
-            pending_moniloggers[event_name].push_back(std::move(monilogger));
+            pending_moniloggers[event_name].push_back(monilogger);
         } else {
             std::list<py::function> event_moniloggers = event_to_moniloggers[event_name];
             // Make sure a monilogger can only be registered once.
             if (std::find(event_moniloggers.begin(), event_moniloggers.end(), monilogger) == event_moniloggers.end())
             {
                 // Add the monilogger to the list of registered moniloggers for this event name.
-                event_to_moniloggers[event_name].push_back(std::move(monilogger));
+                event_to_moniloggers[event_name].push_back(monilogger);
                 for (auto id : ids)
                 {
                     // Add the monilogger to the list of registered moniloggers for each base event.
                     // TODO: add to pending moniloggers if the base event does not exist yet.
-                    registered_moniloggers[id].push_back(std::move(monilogger));
+                    registered_moniloggers[id].push_back(monilogger);
                 }
             }
-            
         }
     }
 
@@ -198,7 +198,7 @@ namespace MoniLogger
     void initialize_monilogger(std::vector<std::string> python_path,
         std::vector<std::string> python_scripts,
         std::string interface_module,
-        std::function<void (py::module_, py::object)> interface_module_initializer)
+        std::function<void (py::module_)> interface_module_initializer)
     {
         guard = std::shared_ptr<py::scoped_interpreter>(new py::scoped_interpreter{});
 
@@ -216,7 +216,7 @@ namespace MoniLogger
         // // Initializing the user-provided interface module exposing C++ variables to Python scripts.
         py::module_ interface_py_module = py::module_::import(interface_module.c_str());
         py::object ctx = (py::object) moniloggerInternalModule.attr("MoniLoggerExecutionContext");
-        interface_module_initializer(interface_py_module, ctx);
+        interface_module_initializer(interface_py_module);
 
         // Loading the user-provided Python scripts containing monilogger definitions.
         for (size_t i = 0; i < python_scripts.size(); i++)

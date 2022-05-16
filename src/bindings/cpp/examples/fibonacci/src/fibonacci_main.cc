@@ -27,9 +27,9 @@ int main(int argc, char const *argv[])
         return 1;
     }
     
-    initialize_embedding(python_path, python_script);
+    Fibonacci::Embedding::initialize(python_path, python_script);
 
-    fibonacci(n);
+    Fibonacci::fibonacci(n);
 
     return 0;
 }

@@ -68,6 +68,6 @@ namespace MoniLogger
     void initialize_monilogger(std::vector<std::string> python_path,
         std::vector<std::string> python_scripts,
         std::string interface_module,
-        std::function<void (py::module_, py::object)> interface_module_initializer);
+        std::function<void (py::module_)> interface_module_initializer=[](py::module_ m) { });
 }
 #endif
