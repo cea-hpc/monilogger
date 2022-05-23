@@ -1,4 +1,4 @@
-# Monilogger
+# SciHook
 
-A Python logging and monitoring toolbox for C++ and Python-embedding applications.
+A Python and C++ instrumentation library for scientific computing
 

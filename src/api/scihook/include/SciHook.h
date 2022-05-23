@@ -1,5 +1,5 @@
-#ifndef __MONILOGGER_H_
-#define __MONILOGGER_H_
+#ifndef __SCIHOOK_H_
+#define __SCIHOOK_H_
 
 #include <fstream>
 #include <iomanip>

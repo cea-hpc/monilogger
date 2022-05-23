@@ -55,7 +55,7 @@ struct MyExecutionContext : SciHook::SciHookExecutionContext
     MyClass *instance = nullptr;
 
     // Adapted struct constructor.
-    MyExecutionContext(MyClass *instance, std::string name) : MoniLogExecutionContext(name), instance(instance) {}
+    MyExecutionContext(MyClass *instance, std::string name) : SciHookExecutionContext(name), instance(instance) {}
     virtual ~MyExecutionContext() = default;
 };
 ```
@@ -116,6 +116,6 @@ SciHook::initialize_scihook(python_path, python_scripts, interface_module, inter
 
 ```cpp
 std::shared_ptr<MyExecutionContext> context(new MyExecutionContext(this, "MyCurrentContext"));
-MoniLog::trigger(0, context);
-MoniLog::trigger("SomeCompositeEvent", context);
+SciHook::trigger(0, context);
+SciHook::trigger("SomeCompositeEvent", context);
 ```
