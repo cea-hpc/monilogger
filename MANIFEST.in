@@ -1,3 +1,3 @@
 include src/api/CMakeLists.txt
-include src/api/MoniLogger.cc
-include src/api/monilogger_module.cc
+include src/api/SciHook.cc
+include src/api/scihook_module.cc

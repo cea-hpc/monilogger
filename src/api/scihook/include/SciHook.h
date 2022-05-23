@@ -14,19 +14,19 @@
 
 namespace py = pybind11;
 
-namespace MoniLogger
+namespace SciHook
 {
-    struct MoniLoggerExecutionContext
+    struct SciHookExecutionContext
     {
-        std::string name = "MoniLoggerExecutionContext";
+        std::string name = "SciHookExecutionContext";
         const pybind11::object get_name() const { return pybind11::cast(name); }
 
-        MoniLoggerExecutionContext() {}
-        MoniLoggerExecutionContext(std::string name) : name(name) {}
-        virtual ~MoniLoggerExecutionContext() = default;
+        SciHookExecutionContext() {}
+        SciHookExecutionContext(std::string name) : name(name) {}
+        virtual ~SciHookExecutionContext() = default;
     };
 
-    MoniLoggerExecutionContext create_context(std::string name);
+    SciHookExecutionContext create_context(std::string name);
 
     /**
      * @brief Registers the event as a complex event triggered by the provided list of events.
@@ -51,21 +51,21 @@ namespace MoniLogger
     std::list<std::string> get_base_events();
 
     __attribute__((visibility("default")))
-    void register_monilogger(std::string event_name, py::function monilogger);
+    void register_scihook(std::string event_name, py::function scihook);
 
     __attribute__((visibility("default")))
-    void unregister_monilogger(std::string event_name, py::function monilogger);
+    void unregister_scihook(std::string event_name, py::function scihook);
 
-    bool has_registered_moniloggers(size_t event);
+    bool has_registered_scihooks(size_t event);
 
-    std::list<py::function> get_registered_moniloggers(size_t event);
+    std::list<py::function> get_registered_scihooks(size_t event);
 
-    void trigger(std::string event_name, std::shared_ptr<MoniLoggerExecutionContext> scope);
+    void trigger(std::string event_name, std::shared_ptr<SciHookExecutionContext> scope);
 
-    void trigger(size_t event_id, std::shared_ptr<MoniLoggerExecutionContext> scope);
+    void trigger(size_t event_id, std::shared_ptr<SciHookExecutionContext> scope);
 
     __attribute__((visibility("default")))
-    void initialize_monilogger(std::vector<std::string> python_path,
+    void initialize_scihook(std::vector<std::string> python_path,
         std::vector<std::string> python_scripts,
         std::string interface_module,
         std::function<void (py::module_)> interface_module_initializer=[](py::module_ m) { });

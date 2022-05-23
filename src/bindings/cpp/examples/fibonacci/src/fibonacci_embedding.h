@@ -1,7 +1,7 @@
 #ifndef __FIBONACCI_EMBEDDING_H_
 #define __FIBONACCI_EMBEDDING_H_
 
-#include <MoniLogger.h>
+#include <SciHook.h>
 
 #define INITIALIZE "Initialize"
 #define ITERATE "Iterate"
@@ -13,7 +13,7 @@ namespace Fibonacci::Embedding
     extern size_t ITERATE_ID;
     extern size_t FINALIZE_ID;
 
-	struct FibonacciExecutionContext : MoniLogger::MoniLoggerExecutionContext
+	struct FibonacciExecutionContext : SciHook::SciHookExecutionContext
 	{
 		const pybind11::object get_n() const { return pybind11::cast(n); }
 		const pybind11::object get_previous_number() const { if (previous_number != nullptr) return pybind11::cast(*previous_number); else return pybind11::cast<pybind11::none>(Py_None); }
@@ -25,7 +25,7 @@ namespace Fibonacci::Embedding
 		int *current_number = nullptr;
 		int *iteration = nullptr;
 		
-		FibonacciExecutionContext(int n, std::string name) : MoniLoggerExecutionContext(name), n(n)	{}
+		FibonacciExecutionContext(int n, std::string name) : SciHookExecutionContext(name), n(n)	{}
 	};
 
 	void initialize(std::vector<std::string> python_path, std::vector<std::string> python_scripts);

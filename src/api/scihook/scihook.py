@@ -1,7 +1,7 @@
 import functools
-import monilogger._monilogger as mnlg
+import scihook._scihook as mnlg
 
-__all__ = ('register', 'register_monilogger', 'define_event')
+__all__ = ('register', 'register_scihook', 'define_event')
 
 def register(event):
   def wrapped(func):
@@ -17,7 +17,7 @@ def register(event):
     return new_func
   return wrapped
 
-def register_monilogger(func, event):
+def register_scihook(func, event):
   register(event)(func)
 
 def define_event(event, triggering_events):

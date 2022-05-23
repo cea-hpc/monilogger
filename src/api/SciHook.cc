@@ -1,14 +1,14 @@
-#include <MoniLogger.h>
+#include <SciHook.h>
 
 namespace py = pybind11;
 
-namespace MoniLogger
+namespace SciHook
 {
     namespace
     {
-        std::vector<std::list<py::function>> registered_moniloggers;
-        std::map<std::string, std::list<py::function>> event_to_moniloggers;
-        std::map<std::string, std::list<py::function>> pending_moniloggers;
+        std::vector<std::list<py::function>> registered_scihooks;
+        std::map<std::string, std::list<py::function>> event_to_scihooks;
+        std::map<std::string, std::list<py::function>> pending_scihooks;
         std::map<std::string, size_t> base_events;
         std::map<std::string, std::list<std::string>> complex_events;
         std::shared_ptr<py::scoped_interpreter> guard;
@@ -69,11 +69,11 @@ namespace MoniLogger
             }
             complex_events[event_name] = std::list<std::string>(triggering_events);
 
-            for (auto monilogger : pending_moniloggers[event_name])
+            for (auto scihook : pending_scihooks[event_name])
             {
-                register_monilogger(event_name, monilogger);
+                register_scihook(event_name, scihook);
             }
-            pending_moniloggers.erase(event_name);
+            pending_scihooks.erase(event_name);
         }
     }
 
@@ -97,12 +97,12 @@ namespace MoniLogger
             } else {
                 const size_t result = base_events.size();
                 base_events[event_name] = result;
-                registered_moniloggers.emplace_back(std::list<py::function>());
-                for (auto monilogger : pending_moniloggers[event_name])
+                registered_scihooks.emplace_back(std::list<py::function>());
+                for (auto scihook : pending_scihooks[event_name])
                 {
-                    registered_moniloggers[result].push_back(monilogger);
+                    registered_scihooks[result].push_back(scihook);
                 }
-                pending_moniloggers.erase(event_name);
+                pending_scihooks.erase(event_name);
                 return result;
             }
         } else {
@@ -120,82 +120,82 @@ namespace MoniLogger
         return result;
     }
 
-    // TODO: use std::shared_ptr(monilogger)?
-    void register_monilogger(std::string event_name, py::function monilogger)
+    // TODO: use std::shared_ptr(scihook)?
+    void register_scihook(std::string event_name, py::function scihook)
     {
         // Retrieve each base event triggering this event.
         auto ids = get_event_ids(event_name);
         if (ids.empty())
         {
             // If no base event exists yet, the event name has not been declared yet,
-            // add the monilogger to the list of pending moniloggers for that event.
-            pending_moniloggers[event_name].push_back(monilogger);
+            // add the scihook to the list of pending scihooks for that event.
+            pending_scihooks[event_name].push_back(scihook);
         } else {
-            std::list<py::function> event_moniloggers = event_to_moniloggers[event_name];
-            // Make sure a monilogger can only be registered once.
-            if (std::find(event_moniloggers.begin(), event_moniloggers.end(), monilogger) == event_moniloggers.end())
+            std::list<py::function> event_scihooks = event_to_scihooks[event_name];
+            // Make sure a scihook can only be registered once.
+            if (std::find(event_scihooks.begin(), event_scihooks.end(), scihook) == event_scihooks.end())
             {
-                // Add the monilogger to the list of registered moniloggers for this event name.
-                event_to_moniloggers[event_name].push_back(monilogger);
+                // Add the scihook to the list of registered scihooks for this event name.
+                event_to_scihooks[event_name].push_back(scihook);
                 for (auto id : ids)
                 {
-                    // Add the monilogger to the list of registered moniloggers for each base event.
-                    // TODO: add to pending moniloggers if the base event does not exist yet.
-                    registered_moniloggers[id].push_back(monilogger);
+                    // Add the scihook to the list of registered scihooks for each base event.
+                    // TODO: add to pending scihooks if the base event does not exist yet.
+                    registered_scihooks[id].push_back(scihook);
                 }
             }
         }
     }
 
-    void unregister_monilogger(std::string event_name, py::function monilogger)
+    void unregister_scihook(std::string event_name, py::function scihook)
     {
         auto ids = get_event_ids(event_name);
         for (auto id : ids)
         {
-            std::list<py::function> moniloggers = registered_moniloggers[id];
-            std::list<py::function>::iterator it = std::find(moniloggers.begin(), moniloggers.end(), monilogger);
-            // Can't stop an unregistered monilogger.
-            if (it != moniloggers.end())
+            std::list<py::function> scihooks = registered_scihooks[id];
+            std::list<py::function>::iterator it = std::find(scihooks.begin(), scihooks.end(), scihook);
+            // Can't stop an unregistered scihook.
+            if (it != scihooks.end())
             {
-                moniloggers.erase(it);
-                registered_moniloggers[id] = moniloggers;
+                scihooks.erase(it);
+                registered_scihooks[id] = scihooks;
             }
         }
     }
 
-    bool has_registered_moniloggers(size_t event)
+    bool has_registered_scihooks(size_t event)
     {
-        return !registered_moniloggers[event].empty();
+        return !registered_scihooks[event].empty();
     }
 
-    std::list<py::function> get_registered_moniloggers(size_t event)
+    std::list<py::function> get_registered_scihooks(size_t event)
     {
-        return registered_moniloggers[event];
+        return registered_scihooks[event];
     }
 
-    void trigger(std::string event_name, std::shared_ptr<MoniLoggerExecutionContext> context)
+    void trigger(std::string event_name, std::shared_ptr<SciHookExecutionContext> context)
     {
-        for (py::function monilogger : event_to_moniloggers[event_name])
+        for (py::function scihook : event_to_scihooks[event_name])
         {
-            monilogger(context);
+            scihook(context);
         }
     }
 
-    void trigger(size_t event_id, std::shared_ptr<MoniLoggerExecutionContext> context)
+    void trigger(size_t event_id, std::shared_ptr<SciHookExecutionContext> context)
     {
-        std::list<py::function> moniloggers = registered_moniloggers[event_id];
-        for (py::function monilogger : moniloggers)
+        std::list<py::function> scihooks = registered_scihooks[event_id];
+        for (py::function scihook : scihooks)
         {
-            monilogger(context);
+            scihook(context);
         }
     }
 
-    MoniLoggerExecutionContext create_context(std::string name)
+    SciHookExecutionContext create_context(std::string name)
     {
-        return MoniLoggerExecutionContext(name);
+        return SciHookExecutionContext(name);
     }
 
-    void initialize_monilogger(std::vector<std::string> python_path,
+    void initialize_scihook(std::vector<std::string> python_path,
         std::vector<std::string> python_scripts,
         std::string interface_module,
         std::function<void (py::module_)> interface_module_initializer)
@@ -209,16 +209,16 @@ namespace MoniLogger
             append_to_path(python_path[i]);
         }
 
-        // // Initializing the MoniLogger Python module.
-        py::module_ moniloggerModule = py::module_::import("monilogger");
-        py::module_ moniloggerInternalModule = py::module_::import("monilogger._monilogger");
+        // // Initializing the SciHook Python module.
+        py::module_ scihookModule = py::module_::import("scihook");
+        py::module_ scihookInternalModule = py::module_::import("scihook._scihook");
 
         // // Initializing the user-provided interface module exposing C++ variables to Python scripts.
         py::module_ interface_py_module = py::module_::import(interface_module.c_str());
-        py::object ctx = (py::object) moniloggerInternalModule.attr("MoniLoggerExecutionContext");
+        py::object ctx = (py::object) scihookInternalModule.attr("SciHookExecutionContext");
         interface_module_initializer(interface_py_module);
 
-        // Loading the user-provided Python scripts containing monilogger definitions.
+        // Loading the user-provided Python scripts containing scihook definitions.
         for (size_t i = 0; i < python_scripts.size(); i++)
         {
             py::module_::import(python_scripts[i].c_str());

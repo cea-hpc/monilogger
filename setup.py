@@ -9,7 +9,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import Extension, find_packages, setup
 from distutils import ccompiler
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 # Convert distutils Windows platform specifiers to CMake -A arguments
 PLAT_TO_CMAKE = {
@@ -112,13 +112,13 @@ class CMakeBuild(build_ext):
         subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=build_temp)
 
 ext_modules = [
-    CMakeExtension("monilogger._monilogger", sourcedir="src/api")
+    CMakeExtension("scihook._scihook", sourcedir="src/api")
 ]
 
 # ext_modules = [
-#     Pybind11Extension("monilogger._monilogger",
-#         ["src/MoniLogger.cc"],
-#         include_dirs = ["src/monilogger/include"],
+#     Pybind11Extension("scihook._scihook",
+#         ["src/SciHook.cc"],
+#         include_dirs = ["src/scihook/include"],
 #         define_macros = [('VERSION_INFO', __version__)],
 #         cxx_std=17
 #         ),
@@ -129,18 +129,18 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
-    name="monilogger",
+    name="scihook",
     version=__version__,
     author="Dorian Leroy",
     author_email="dorian.leroy@cea.fr",
-    url="https://github.com/cea-hpc/monilogger",
+    url="https://github.com/cea-hpc/scihook",
     description="A Python logging and monitoring toolbox for C++ applications.",
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=["monilogger"],
+    packages=["scihook"],
     package_dir={"": "src/api"},
     package_data={
-        "monilogger": ["include/MoniLogger.h"],
+        "scihook": ["include/SciHook.h"],
     },
     ext_modules=ext_modules,
     cmdclass={"build_ext": CMakeBuild},

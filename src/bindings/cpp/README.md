@@ -1,50 +1,50 @@
-# Using monilogger in your C++ app
+# Using scihook in your C++ app
 
 ## Defining the execution events
 
 ```cpp
-MoniLogger::register_base_events({
+SciHook::register_base_events({
     {"SomeEvent", 0},
     {"SomeOtherEvent", 1}
 });
 ```
 
 ```cpp
-MoniLogger::register_composite_event("SomeCompositeEvent", {"SomeEvent", "SomeOtherEvent"});
+SciHook::register_composite_event("SomeCompositeEvent", {"SomeEvent", "SomeOtherEvent"});
 ```
 
 ## Defining the exposed execution context
 
 ```cpp
-struct MyExecutionContext : MoniLogger::MoniLoggerExecutionContext
+struct MyExecutionContext : SciHook::SciHookExecutionContext
 {
     /*
         Declare the exposed variables here.
     */
 
     // Default constructor for execution context structs.
-    using MoniLogger::MoniLoggerExecutionContext::MoniLoggerExecutionContext;
+    using SciHook::SciHookExecutionContext::SciHookExecutionContext;
 };
 ```
 
 ### Exposing local variables
 
 ```cpp
-struct MyExecutionContext : MoniLogger::MoniLoggerExecutionContext
+struct MyExecutionContext : SciHook::SciHookExecutionContext
 {
     // Declaring a getter for the 'foo' variable.
     const pybind11::object get_foo() const { if (foo != nullptr) return pybind11::cast(*foo); else return pybind11::cast<pybind11::none>(Py_None); }
     // Struct member storing the pointer to the local variable.
     double *foo = nullptr;
 
-    using MoniLogger::MoniLoggerExecutionContext::MoniLoggerExecutionContext;
+    using SciHook::SciHookExecutionContext::SciHookExecutionContext;
 };
 ```
 
 ### Exposing class members
 
 ```cpp
-struct MyExecutionContext : MoniLogger::MoniLoggerExecutionContext
+struct MyExecutionContext : SciHook::SciHookExecutionContext
 {
     const pybind11::object get_foo() const { if (foo != nullptr) return pybind11::cast(*foo); else return pybind11::cast<pybind11::none>(Py_None); }
     // Declaring a getter for the 'bar' variable.
@@ -67,7 +67,7 @@ struct MyExecutionContext : MoniLogger::MoniLoggerExecutionContext
 std::function<void (pybind11::module_, pybind11::object)> interface_module_initializer = [](
         // Interface module containing the exposed execution contexts.
         pybind11::module_ interface_module,
-        // MoniLoggerExecutionContext as a Python object for subclassing.
+        // SciHookExecutionContext as a Python object for subclassing.
         pybind11::object context_class) {
     // Declaring a new execution context to be exposed as a Python class.
     pybind11::class_<MyExecutionContext, std::shared_ptr<MyExecutionContext>>(interface_module, "MyExecutionContext", context_class)
@@ -106,10 +106,10 @@ std::function<void (pybind11::module_, pybind11::object)> interface_module_initi
     // ...
 ```
 
-## Starting the Python interpreter and initializing monilogger
+## Starting the Python interpreter and initializing scihook
 
 ```cpp
-MoniLogger::initialize_monilogger(python_path, python_scripts, interface_module, interface_module_initializer);
+SciHook::initialize_scihook(python_path, python_scripts, interface_module, interface_module_initializer);
 ```
 
 ## Triggering execution events
