@@ -2,12 +2,9 @@ import os
 import re
 import subprocess
 import sys
-from sysconfig import get_paths
 
-from pybind11 import get_cmake_dir
-from pybind11.setup_helpers import Pybind11Extension, build_ext
-from setuptools import Extension, find_packages, setup
-from distutils import ccompiler
+from pybind11.setup_helpers import build_ext
+from setuptools import Extension, setup
 
 __version__ = "0.1.1"
 
@@ -45,7 +42,7 @@ class CMakeBuild(build_ext):
         # from Python.
         cmake_args = [
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}",
-            f"-DPYTHON_EXECUTABLE={sys.executable}",
+            f"-DPython_EXECUTABLE={sys.executable}",
             f"-DCMAKE_BUILD_TYPE=Debug",  # not used on MSVC, but no harm
         ]
         build_args = []
