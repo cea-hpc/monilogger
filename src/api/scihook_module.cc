@@ -15,4 +15,8 @@ PYBIND11_MODULE(_scihook, m) {
     {
         SciHook::trigger(event_name, scope);
     });
+    m.def("emit_event_by_id", [](size_t event_id, std::shared_ptr<SciHook::SciHookExecutionContext> scope)
+    {
+        SciHook::trigger(event_id, scope);
+    });
 }

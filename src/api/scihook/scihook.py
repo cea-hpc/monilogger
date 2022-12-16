@@ -1,7 +1,7 @@
 import functools
 import scihook._scihook as sh
 
-__all__ = ('register', 'register_scihook', 'define_event')
+__all__ = ('register', 'register_scihook', 'define_event', 'get_base_events', 'SciHookEvent')
 
 def register(event):
   def wrapped(func):
@@ -26,3 +26,9 @@ def define_event(event, triggering_events):
   else:
     event_name = event.__qualname__
   sh.register_complex_event(event_name, triggering_events)
+
+def get_base_events():
+  return sh.get_base_events()
+
+class SciHookEvent:
+  pass

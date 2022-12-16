@@ -6,7 +6,7 @@ import sys
 from pybind11.setup_helpers import build_ext
 from setuptools import Extension, setup
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 # Convert distutils Windows platform specifiers to CMake -A arguments
 PLAT_TO_CMAKE = {

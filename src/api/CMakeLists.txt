@@ -10,6 +10,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -O3")
 # PROJECT
 project(scihook CXX)
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
+set(Python_FIND_VIRTUALENV ONLY)
 
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 set(pybind11_DIR "${Python_SITELIB}/pybind11/share/cmake/pybind11")

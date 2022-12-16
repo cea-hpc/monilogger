@@ -7,7 +7,6 @@ namespace SciHook
     namespace
     {
         std::vector<std::list<py::function>> registered_scihooks;
-        std::vector<size_t> nb_registered_scihooks;
         std::map<std::string, std::list<py::function>> event_to_scihooks;
         std::map<std::string, std::list<py::function>> pending_scihooks;
         std::map<std::string, size_t> base_events;
@@ -46,10 +45,6 @@ namespace SciHook
                     return {};
                 }
             }
-        }
-
-        void update_nb_registered_scihooks(size_t event_id) {
-            nb_registered_scihooks[event_id] = registered_scihooks[event_id].size();
         }
     }
 
@@ -106,8 +101,8 @@ namespace SciHook
                 for (auto scihook : pending_scihooks[event_name])
                 {
                     registered_scihooks[result].push_back(scihook);
+                    event_to_scihooks[event_name].push_back(scihook);
                 }
-                update_nb_registered_scihooks(result);
                 pending_scihooks.erase(event_name);
                 return result;
             }
@@ -137,6 +132,7 @@ namespace SciHook
         //     std::cout << "Callback has no address\n";
         // }
         // Retrieve each base event triggering this event.
+
         auto ids = get_event_ids(event_name);
         if (ids.empty())
         {
@@ -155,7 +151,6 @@ namespace SciHook
                     // Add the scihook to the list of registered scihooks for each base event.
                     // TODO: add to pending scihooks if the base event does not exist yet.
                     registered_scihooks[id].push_back(scihook);
-                    update_nb_registered_scihooks(id);
                 }
             }
         }
@@ -173,14 +168,13 @@ namespace SciHook
             {
                 scihooks.erase(it);
                 registered_scihooks[id] = scihooks;
-                update_nb_registered_scihooks(id);
             }
         }
     }
 
     bool has_registered_scihooks(size_t event)
     {
-        return nb_registered_scihooks[event];
+        return !registered_scihooks[event].empty();
     }
 
     std::list<py::function> get_registered_scihooks(size_t event)
@@ -190,6 +184,8 @@ namespace SciHook
 
     void trigger(std::string event_name, std::shared_ptr<SciHookExecutionContext> context)
     {
+        // FIXME?
+
         for (py::function scihook : event_to_scihooks[event_name])
         {
             scihook(context);
