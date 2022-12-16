@@ -1,6 +1,7 @@
 #ifndef __SCIHOOK_H_
 #define __SCIHOOK_H_
 
+#include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <type_traits>
@@ -19,7 +20,7 @@ namespace SciHook
     struct SciHookExecutionContext
     {
         std::string name = "SciHookExecutionContext";
-        const pybind11::object get_name() const { return pybind11::cast(name); }
+        const py::object get_name() const { return py::cast(name); }
 
         SciHookExecutionContext() {}
         SciHookExecutionContext(std::string name) : name(name) {}
@@ -45,6 +46,8 @@ namespace SciHook
      * @throws std::invalid_argument If the event to register already exists.
      * 
      * @param event_name name of the base event to register.
+     * 
+     * @returns the unique id of the event.
      */
     size_t register_base_event(std::string event_name);
 
@@ -68,6 +71,6 @@ namespace SciHook
     void initialize_scihook(std::vector<std::string> python_path,
         std::vector<std::string> python_scripts,
         std::string interface_module,
-        std::function<void (py::module_)> interface_module_initializer=[](py::module_ m) { });
+        std::function<void (py::module_)> interface_module_initializer=[](__attribute__((unused)) py::module_ m) { });
 }
 #endif

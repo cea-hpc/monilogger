@@ -101,6 +101,7 @@ namespace SciHook
                 for (auto scihook : pending_scihooks[event_name])
                 {
                     registered_scihooks[result].push_back(scihook);
+                    event_to_scihooks[event_name].push_back(scihook);
                 }
                 pending_scihooks.erase(event_name);
                 return result;
@@ -123,7 +124,15 @@ namespace SciHook
     // TODO: use std::shared_ptr(scihook)?
     void register_scihook(std::string event_name, py::function scihook)
     {
+        // if (py::hasattr(scihook, "address"))
+        // {
+        //     auto address = scihook.attr("address");
+        //     std::cout << "Callback address: " << address() << '\n';
+        // } else {
+        //     std::cout << "Callback has no address\n";
+        // }
         // Retrieve each base event triggering this event.
+
         auto ids = get_event_ids(event_name);
         if (ids.empty())
         {
@@ -175,6 +184,8 @@ namespace SciHook
 
     void trigger(std::string event_name, std::shared_ptr<SciHookExecutionContext> context)
     {
+        // FIXME?
+
         for (py::function scihook : event_to_scihooks[event_name])
         {
             scihook(context);
