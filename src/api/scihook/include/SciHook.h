@@ -17,6 +17,33 @@ namespace py = pybind11;
 
 namespace SciHook
 {
+
+    struct DataFlowDict {
+        const std::map<ssize_t, std::vector<py::object>>& map;
+
+        std::vector<py::object> get(py::object key) const {
+            auto it = map.find(py::hash(key));
+            if (it == map.end()) {
+                throw py::key_error();
+            }
+            return it->second;
+        }
+
+        bool empty() const { return !map.empty(); };
+        
+        py::iterator iter() const { return py::make_key_iterator(map.begin(), map.end()); };
+        
+        bool contains(py::object key) const {
+            auto it = map.find(py::hash(key));
+            if (it == map.end()) {
+                return false;
+            }
+            return true;
+        };
+
+        DataFlowDict(const std::map<ssize_t, std::vector<py::object>>& map) : map(map) {}
+    };
+
     struct SciHookExecutionContext
     {
         std::string name = "SciHookExecutionContext";

@@ -31,4 +31,11 @@ def get_base_events():
   return sh.get_base_events()
 
 class SciHookEvent:
-  pass
+
+  name = None
+  ctx_class = None
+
+  def __init__(self, name, ctx_class) -> None:
+    super().__init__()
+    self.name = name
+    self.ctx_class = ctx_class
