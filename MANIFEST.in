@@ -1,3 +1,2 @@
-include src/api/CMakeLists.txt
-include src/api/SciHook.cc
-include src/api/scihook_module.cc
+include src/bindings/CMakeLists.txt
+include src/bindings/scihook_module.cc
