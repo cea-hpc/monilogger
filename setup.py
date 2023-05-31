@@ -1,24 +1,17 @@
 import os
 import re
 import subprocess
+import platform
 import sys
 
-from pybind11.setup_helpers import build_ext
 from setuptools import Extension, setup
+from setuptools.command.build_ext import build_ext
+from distutils.version import LooseVersion
 
-__version__ = "0.1.2"
+def log(msg):
+    sys.stderr.write(f"scihook setup.py: {str(msg)}\n")
 
-# Convert distutils Windows platform specifiers to CMake -A arguments
-PLAT_TO_CMAKE = {
-    "win32": "Win32",
-    "win-amd64": "x64",
-    "win-arm32": "ARM",
-    "win-arm64": "ARM64",
-}
 
-# A CMakeExtension needs a sourcedir instead of a file list.
-# The name must be the _single_ output extension from the CMake build.
-# If you need multiple extensions, see scikit-build.
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=""):
         Extension.__init__(self, name, sources=[])
@@ -26,100 +19,80 @@ class CMakeExtension(Extension):
 
 
 class CMakeBuild(build_ext):
+    def run(self):
+        try:
+            out = subprocess.check_output(['cmake', '--version'])
+        except OSError:
+            raise RuntimeError(f"CMake must be installed to build the following extensions: {','.join(e.name for e in self.extensions)}")
+
+        self.cmake_version = LooseVersion(re.search(r'version\s*([\d.]+)', out.decode()).group(1))
+        if self.cmake_version < '3.12.1':
+            raise RuntimeError("CMake >= 3.12.1 is required")
+        
+        for ext in self.extensions:
+            self.build_extension(ext)
+
     def build_extension(self, ext):
-        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        env = os.environ.copy()
 
-        # required for auto-detection & inclusion of auxiliary "native" libs
-        if not extdir.endswith(os.path.sep):
-            extdir += os.path.sep
+        ext_dir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        build_dir = os.path.abspath(self.build_temp)
+        install_dir = ext_dir
 
-        # CMake lets you override the generator - we need to check this.
-        # Can be set with Conda-Build, for example.
-        cmake_generator = os.environ.get("CMAKE_GENERATOR", "")
+        if not ext_dir.endswith(os.path.sep):
+            ext_dir += os.path.sep
 
-        # Set Python_EXECUTABLE instead if you use PYBIND11_FINDPYTHON
-        # EXAMPLE_VERSION_INFO shows you how to pass a value into the C++ code
-        # from Python.
-        cmake_args = [
-            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}",
-            f"-DPython_EXECUTABLE={sys.executable}",
-            f"-DCMAKE_BUILD_TYPE=Debug",  # not used on MSVC, but no harm
+        rpaths = [
+            '$ORIGIN/../lib', '$ORIGIN/../lib64',
+            '$ORIGIN/lib', '$ORIGIN/lib64'
         ]
-        build_args = []
-        # Adding CMake arguments set as environment variable
-        # (needed e.g. to build for ARM OSx on conda-forge)
-        if "CMAKE_ARGS" in os.environ:
-            cmake_args += [item for item in os.environ["CMAKE_ARGS"].split(" ") if item]
 
-        # if self.compiler.compiler_type != "msvc":
-        #     # Using Ninja-build since it a) is available as a wheel and b)
-        #     # multithreads automatically. MSVC would require all variables be
-        #     # exported for Ninja to pick it up, which is a little tricky to do.
-        #     # Users can override the generator with CMAKE_GENERATOR in CMake
-        #     # 3.15+.
-        #     if not cmake_generator:
-        #         try:
-        #             import ninja  # noqa: F401
+        cmake_args = [
+            f"-DPYTHON_EXECUTABLE={sys.executable}",
+            f"-DCMAKE_INSTALL_PREFIX={install_dir}",
+            f"-DCMAKE_INSTALL_RPATH={':'.join(rpaths)}",
+            f"-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON",
+        ]
 
-        #             cmake_args += ["-GNinja"]
-        #         except ImportError:
-        #             pass
+        if env['SCIHOOK_ROOT']:
+            cmake_args += [ f"-DSCIHOOK_ROOT={env['SCIHOOK_ROOT']}" ]
 
-        # else:
+        cfg = 'Debug' if self.debug else 'RelWithDebInfo'
+        build_args = [ '--config', cfg ]
 
-        #     # Single config generators are handled "normally"
-        #     single_config = any(x in cmake_generator for x in {"NMake", "Ninja"})
+        if platform.system() == "Windows":
+            if sys.maxsize > 2**32:
+                cmake_args += [ '-A', 'x64' ]
+            build_args += [ '--', '/m' ]
+        else:
+            cmake_args += [ f"-DCMAKE_BUILD_TYPE={cfg}" ]
+            import multiprocessing
+            build_args += [ '--', '-j', str(multiprocessing.cpu_count()) ]
+        
+        env['CXXFLAGS'] = f'{env.get("CXXFLAGS", "")} -DVERSION_INFO="{self.distribution.get_version()}"'
+        
+        if not os.path.exists(build_dir):
+            os.makedirs(build_dir)
 
-        #     # CMake allows an arch-in-generator style for backward compatibility
-        #     contains_arch = any(x in cmake_generator for x in {"ARM", "Win64"})
+        subprocess.check_call(["cmake", ext.sourcedir] + cmake_args, cwd=build_dir)
+        subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=build_dir)
 
-        #     # Specify the arch if using MSVC generator, but only if it doesn't
-        #     # contain a backward-compatibility arch spec already in the
-        #     # generator name.
-        #     if not single_config and not contains_arch:
-        #         cmake_args += ["-A", PLAT_TO_CMAKE[self.plat_name]]
-
-        #     # Multi-config generators have a different way to specify configs
-        #     if not single_config:
-        #         cmake_args += [
-        #             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={extdir}"
-        #         ]
-        #         build_args += ["--config", cfg]
-
-        if sys.platform.startswith("darwin"):
-            # Cross-compile support for macOS - respect ARCHFLAGS if set
-            archs = re.findall(r"-arch (\S+)", os.environ.get("ARCHFLAGS", ""))
-            if archs:
-                cmake_args += ["-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
-
-        # Set CMAKE_BUILD_PARALLEL_LEVEL to control the parallel build level
-        # across all generators.
-        if "CMAKE_BUILD_PARALLEL_LEVEL" not in os.environ:
-            # self.parallel is a Python 3 only way to set parallel jobs by hand
-            # using -j in the build_ext call, not supported by pip or PyPA-build.
-            if hasattr(self, "parallel") and self.parallel:
-                # CMake 3.12+ only.
-                build_args += [f"-j{self.parallel}"]
-
-        build_temp = os.path.join(self.build_temp, ext.name)
-        if not os.path.exists(build_temp):
-            os.makedirs(build_temp)
-
-        subprocess.check_call(["cmake", ext.sourcedir] + cmake_args, cwd=build_temp)
-        subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=build_temp)
+        if self.cmake_version >= '3.15.0':
+            subprocess.check_call(['cmake', '--install', '.'], cwd=build_dir)
+        else:
+            if platform.system() == 'Windows':
+                raise RuntimeError('"make install" Windows equivalent not implemented! please use cmake >= 3.15')
+            else:
+                subprocess.check_call(['make', 'install'], cwd=build_dir)
 
 ext_modules = [
-    CMakeExtension("scihook._scihook", sourcedir="src/api")
+    CMakeExtension("scihook._scihook", sourcedir="src/bindings")
 ]
 
-# ext_modules = [
-#     Pybind11Extension("scihook._scihook",
-#         ["src/SciHook.cc"],
-#         include_dirs = ["src/scihook/include"],
-#         define_macros = [('VERSION_INFO', __version__)],
-#         cxx_std=17
-#         ),
-# ]
+try:
+    scihook_version = open('version.txt', 'r').read().strip()
+except:
+    raise RuntimeError("Could not find scihook's 'version.txt' file. Please make sure you are in SciHook's root directory.")
 
 from pathlib import Path
 this_directory = Path(__file__).parent
@@ -127,7 +100,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="scihook",
-    version=__version__,
+    version=scihook_version,
     author="Dorian Leroy",
     author_email="dorian.leroy@cea.fr",
     url="https://github.com/cea-hpc/scihook",
@@ -135,14 +108,11 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=["scihook"],
-    package_dir={"": "src/api"},
-    package_data={
-        "scihook": ["include/SciHook.h"],
-    },
+    package_dir={"": "src/bindings"},
     ext_modules=ext_modules,
     cmdclass={"build_ext": CMakeBuild},
     extras_require={"test": "pytest"},
     test_suite='tests',
     zip_safe=False,
-    python_requires=">=3.6",
+    python_requires=">=3.8",
 )

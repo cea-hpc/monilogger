@@ -1,4 +1,4 @@
-#include <SciHook.h>
+#include "SciHook.h"
 
 namespace py = pybind11;
 
@@ -220,11 +220,11 @@ namespace SciHook
             append_to_path(python_path[i]);
         }
 
-        // // Initializing the SciHook Python module.
+        // Initializing the SciHook Python module.
         py::module_ scihookModule = py::module_::import("scihook");
         py::module_ scihookInternalModule = py::module_::import("scihook._scihook");
 
-        // // Initializing the user-provided interface module exposing C++ variables to Python scripts.
+        // Initializing the user-provided interface module exposing C++ variables to Python scripts.
         py::module_ interface_py_module = py::module_::import(interface_module.c_str());
         py::object ctx = (py::object) scihookInternalModule.attr("SciHookExecutionContext");
         interface_module_initializer(interface_py_module);
