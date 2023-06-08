@@ -18,7 +18,7 @@ namespace py = pybind11;
 namespace SciHook
 {
 
-    struct DataFlowDict {
+    struct __attribute__((visibility("default"))) DataFlowDict {
         const std::map<ssize_t, std::vector<py::object>>& map;
 
         std::vector<py::object> get(py::object key) const {

@@ -57,7 +57,7 @@ class CMakeBuild(build_ext):
         if env['SCIHOOK_ROOT']:
             cmake_args += [ f"-DSCIHOOK_ROOT={env['SCIHOOK_ROOT']}" ]
 
-        cfg = 'Debug' if self.debug else 'RelWithDebInfo'
+        cfg = 'Debug' if self.debug else 'Release'
         build_args = [ '--config', cfg ]
 
         if platform.system() == "Windows":
