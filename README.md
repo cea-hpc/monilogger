@@ -22,3 +22,8 @@ This installs SciHook's Python module in the current virtual environment or Pyth
 ```
 SCIHOOK_ROOT=<install_path_for_scihook> pip install .
 ```
+
+Check everything is working fine:
+```
+python -m unittest
+```
