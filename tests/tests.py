@@ -1,6 +1,6 @@
 import unittest
 import scihook
-import scihook._scihook as mnlg
+import scihook._scihook as sh
 
 class MyOtherEvent:
     pass
@@ -13,34 +13,37 @@ class MainTest(unittest.TestCase):
     def test_undefined_event(self):
         @scihook.register("MyEvent")
         def test_scihook(ctx):
+            print(f"\nReceived MyEvent in context {ctx}\n")
             self.result = self.result + 1
 
-        mnlg.register_base_event("MyEvent")
-        mnlg.emit_event("MyEvent", mnlg.SciHookExecutionContext())
+        sh.register_base_event("MyEvent")
+        sh.emit_event("MyEvent", sh.SciHookExecutionContext())
 
         self.assertEqual(self.result, 1)
 
     def test_class_event(self):
-        mnlg.register_base_event("MyOtherEvent")
+        sh.register_base_event("MyOtherEvent")
 
         @scihook.register(MyOtherEvent)
         def test_scihook(ctx):
+            print(f"\nReceived MyOtherEvent in context {ctx}\n")
             self.result = self.result + 1
 
-        mnlg.emit_event("MyOtherEvent", mnlg.SciHookExecutionContext())
+        sh.emit_event("MyOtherEvent", sh.SciHookExecutionContext())
 
         self.assertEqual(self.result, 1)
 
     def test_composite_event(self):
-        mnlg.register_base_event("MyEvent")
-        mnlg.register_base_event("MyOtherEvent")
+        sh.register_base_event("MyEvent")
+        sh.register_base_event("MyOtherEvent")
         scihook.define_event("MyCompositeEvent", ["MyEvent", "MyOtherEvent"])
 
         @scihook.register("MyCompositeEvent")
         def test_scihook(ctx):
+            print(f"\nReceived MyCompositeEvent in context {ctx}\n")
             self.result = self.result + 1
 
-        mnlg.emit_event("MyCompositeEvent", mnlg.SciHookExecutionContext())
+        sh.emit_event("MyCompositeEvent", sh.SciHookExecutionContext())
         
         self.assertEqual(self.result, 1)
 
