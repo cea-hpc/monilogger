@@ -34,7 +34,8 @@ jobs:
       run: cmake --install ${{github.workspace}}/build
 
     - name: Python bindings - install
-      run: SCIHOOK_ROOT=${{github.workspace}}/install pip install ${{github.workspace}}
+      working-directory: ${{github.workspace}}
+      run: source .venv/bin/activate SCIHOOK_ROOT=${{github.workspace}}/install pip install ${{github.workspace}}
       
     - name: Test
       working-directory: ${{github.workspace}}
