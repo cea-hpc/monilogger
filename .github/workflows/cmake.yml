@@ -1,0 +1,43 @@
+name: CMake
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Create venv and install dependencies
+      working-directory: ${{github.workspace}}
+      run: python3 -m venv .venv && source .venv/bin/activate && pip install pybind11 && ls `python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`/pybind11/share/cmake/pybind11
+      
+    - name: Core - create install directory
+      working-directory: ${{github.workspace}}
+      run: mkdir install
+      
+    - name: Core - configure CMake
+      run: source .venv/bin/activate && pybind11_DIR=`python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`/pybind11/share/cmake/pybind11 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+
+    - name: Core - build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    
+    - name: Core - install
+      run: cmake --install ${{github.workspace}}/build
+
+    - name: Python bindings - install
+      working-directory: ${{github.workspace}}
+      run: source .venv/bin/activate && pybind11_DIR=`python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`/pybind11/share/cmake/pybind11 SCIHOOK_ROOT=${{github.workspace}}/install pip install .
+      
+    - name: Test
+      working-directory: ${{github.workspace}}
+      run: source .venv/bin/activate && python -m unittest
+
