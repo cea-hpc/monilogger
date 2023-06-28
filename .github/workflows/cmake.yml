@@ -16,16 +16,20 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
+    - name: Create venv
+      working-directory: ${{github.workspace}}
+      run: python3 -m venv .venv && source .venv/bin/activate && ls `python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`
+    
     - name: Install dependencies
       working-directory: ${{github.workspace}}
-      run: python3 -m venv .venv && source .venv/bin/activate && pip install pybind11 && ls ${{github.workspace}}/.venv/lib/python3.8/site-packages/pybind11/share/cmake/pybind11
+      run: pip install pybind11 && ls `python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`/pybind11/share/cmake/pybind11
       
     - name: Core - create install directory
       working-directory: ${{github.workspace}}
       run: mkdir install
       
     - name: Core - configure CMake
-      run: pybind11_DIR=${{github.workspace}}/.venv/lib/python3.8/site-packages/pybind11/share/cmake/pybind11 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+      run: pybind11_DIR=`python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`/pybind11/share/cmake/pybind11 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Core - build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
