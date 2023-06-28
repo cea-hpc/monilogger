@@ -54,7 +54,7 @@ class CMakeBuild(build_ext):
             f"-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON",
         ]
 
-        if env['SCIHOOK_ROOT']:
+        if 'SCIHOOK_ROOT' in env:
             cmake_args += [ f"-DSCIHOOK_ROOT={env['SCIHOOK_ROOT']}" ]
 
         cfg = 'Debug' if self.debug else 'Release'
