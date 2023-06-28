@@ -18,14 +18,18 @@ jobs:
     
     - name: Create venv and install dependencies
       working-directory: ${{github.workspace}}
-      run: python3 -m venv .venv && source .venv/bin/activate && pip install pybind11 && ls `python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`/pybind11/share/cmake/pybind11
+      run: |
+        python3 -m venv .venv
+        source .venv/bin/activate
+        pip install pybind11
+        echo "pybind11_DIR=`python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`/pybind11/share/cmake/pybind11" >> "$GITHUB_ENV"
       
     - name: Core - create install directory
       working-directory: ${{github.workspace}}
       run: mkdir install
       
     - name: Core - configure CMake
-      run: source .venv/bin/activate && pybind11_DIR=`python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`/pybind11/share/cmake/pybind11 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+      run: source .venv/bin/activate && pybind11_DIR=${pybind11_DIR} cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Core - build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
@@ -35,7 +39,7 @@ jobs:
 
     - name: Python bindings - install
       working-directory: ${{github.workspace}}
-      run: source .venv/bin/activate && pybind11_DIR=`python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`/pybind11/share/cmake/pybind11 SCIHOOK_ROOT=${{github.workspace}}/install pip install .
+      run: source .venv/bin/activate && pybind11_DIR=${pybind11_DIR} SCIHOOK_ROOT=${{github.workspace}}/install pip install .
       
     - name: Test
       working-directory: ${{github.workspace}}
