@@ -29,7 +29,9 @@ jobs:
       run: mkdir install
       
     - name: Core - configure CMake
-      run: source .venv/bin/activate && pybind11_DIR=${pybind11_DIR} cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+      run: |
+        source .venv/bin/activate
+        pybind11_DIR=${pybind11_DIR} cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Core - build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
@@ -39,9 +41,13 @@ jobs:
 
     - name: Python bindings - install
       working-directory: ${{github.workspace}}
-      run: source .venv/bin/activate && pybind11_DIR=${pybind11_DIR} SCIHOOK_ROOT=${{github.workspace}}/install pip install .
+      run: |
+        source .venv/bin/activate
+        pybind11_DIR=${pybind11_DIR} SCIHOOK_ROOT=${{github.workspace}}/install pip install .
       
     - name: Test
       working-directory: ${{github.workspace}}
-      run: source .venv/bin/activate && python -m unittest
+      run: |
+        source .venv/bin/activate
+        python -m unittest
 
