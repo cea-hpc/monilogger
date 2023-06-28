@@ -35,9 +35,9 @@ jobs:
 
     - name: Python bindings - install
       working-directory: ${{github.workspace}}
-      run: source .venv/bin/activate SCIHOOK_ROOT=${{github.workspace}}/install pip install ${{github.workspace}}
+      run: source .venv/bin/activate && SCIHOOK_ROOT=${{github.workspace}}/install pip install .
       
     - name: Test
       working-directory: ${{github.workspace}}
-      run: python3 -m unittest
+      run: source .venv/bin/activate && python -m unittest
 
