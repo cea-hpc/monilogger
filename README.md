@@ -2,6 +2,8 @@
 
 A Python and C++ instrumentation library for scientific computing.
 
+![CI](https://github.com/cea-hpc/scihook/actions/workflows/cmake.yml/badge.svg)
+
 ## Installation
 
 ### From source
