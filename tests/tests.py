@@ -13,7 +13,7 @@ class MainTest(unittest.TestCase):
     def test_undefined_event(self):
         @scihook.register("MyEvent")
         def test_scihook(ctx):
-            print(f"\nReceived MyEvent in context {ctx}\n")
+            print(f"\nReceived MyEvent in context {ctx.name}")
             self.result = self.result + 1
 
         sh.register_base_event("MyEvent")
@@ -26,7 +26,7 @@ class MainTest(unittest.TestCase):
 
         @scihook.register(MyOtherEvent)
         def test_scihook(ctx):
-            print(f"\nReceived MyOtherEvent in context {ctx}\n")
+            print(f"\nReceived MyOtherEvent in context {ctx.name}")
             self.result = self.result + 1
 
         sh.emit_event("MyOtherEvent", sh.SciHookExecutionContext())
@@ -40,7 +40,7 @@ class MainTest(unittest.TestCase):
 
         @scihook.register("MyCompositeEvent")
         def test_scihook(ctx):
-            print(f"\nReceived MyCompositeEvent in context {ctx}\n")
+            print(f"\nReceived MyCompositeEvent in context {ctx.name}")
             self.result = self.result + 1
 
         sh.emit_event("MyCompositeEvent", sh.SciHookExecutionContext())
