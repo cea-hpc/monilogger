@@ -128,24 +128,18 @@ def parse(compile_commands_path, paths):
         includes = []
 
         echo(f"Parsing {f}")
-        echo(f"Include args are {' '.join(compile_args[f])}")
         
-        # translation_unit = index.parse(f, args=compile_args[f], options=TranslationUnit.PARSE_SKIP_FUNCTION_BODIES)
         translation_unit = index.parse(f, args=compile_args[f], options=default_parser_options)
-        # translation_unit = index.parse(f, args=compile_args[f])
         for diag in translation_unit.diagnostics:
             print(diag)
         
         includes += [str(x) for x in parse_includes(translation_unit, f)]
         includes = list(set(includes))
         includes.sort()
-        
-        echo(includes)
 
         all_nodes = translation_unit.cursor.get_children()
         all_methods = [m for m in all_nodes if m.location.file != None and m.location.file.name == f and m.kind == CursorKind.CXX_METHOD]
         for m in all_methods:
             struct = create_struct_from_method(m)
             structs.append(struct)
-    return list(set(includes)), structs
-
+    return includes, structs

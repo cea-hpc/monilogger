@@ -10,7 +10,8 @@ def generate_context_file(output_path, module_name, includes, structs, dry_run):
             module_name=module_name,
             includes=includes, structs=structs
     )
-    echo(text)
-    if not dry_run:
+    if dry_run:
+        echo(text)
+    else:
         with open(output_path, 'w') as f:
             f.write(text)
