@@ -13,6 +13,7 @@ ${i}
 % for s in structs:
 struct ${s['name']} : SciHook::SciHookExecutionContext
 {
+    const pybind11::object get_instance() const { if (instance != nullptr) return pybind11::cast(instance); else return pybind11::cast<pybind11::none>(Py_None); }
     % for l in s['locals']:
     const pybind11::object get_${l['name']}() const { if (${l['name']} != nullptr) return pybind11::cast(*${l['name']}); else return pybind11::cast<pybind11::none>(Py_None); }
     % endfor
@@ -38,6 +39,7 @@ PYBIND11_EMBEDDED_MODULE(${module_name}, m)
 {
 % for s in structs:
   pybind11::class_<${s['name']}, std::shared_ptr<${s['name']}>, SciHook::SciHookExecutionContext>(m, "${s['name']}")
+    .def_property_readonly("instance", &${s['name']}::get_instance)
     % for l in s['locals']:
     .def_property_readonly("${l['name']}", &${s['name']}::get_${l['name']})
     % endfor
