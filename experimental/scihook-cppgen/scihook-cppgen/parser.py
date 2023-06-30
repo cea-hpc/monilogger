@@ -1,9 +1,8 @@
 from click import echo
 import clang.cindex
-from clang.cindex import Cursor, CursorKind, TranslationUnit
+from clang.cindex import Cursor, CursorKind
 import typing
 import json
-import os
 from include_parser import parse_includes
 
 
@@ -89,6 +88,10 @@ def find_classes(nodes, source_file):
                 [CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL], source_file)
 
 
+def find_method_class(method):
+    return method.semantic_parent
+
+
 def find_methods(nodes, source_file):
     filter_node_list_by_node_kind(nodes,
                     [CursorKind.CXX_METHOD, CursorKind.OBJC_CLASS_METHOD_DECL, CursorKind.OBJC_INSTANCE_METHOD_DECL], source_file)
@@ -97,6 +100,7 @@ def find_methods(nodes, source_file):
 def create_struct_from_method(method):
     struct = {}
     struct['class'] = '::'.join(fully_qualified(method).split('::')[:-1])
+    struct['method'] = method.spelling
     struct['name'] = f"{''.join(map(lambda s: s.capitalize(), fully_qualified(method).split('::')))}ExecutionContext"
     locals = []
     for a in method.get_arguments():
@@ -122,9 +126,12 @@ def parse(compile_commands_path, paths):
                 include_args.append(arg)
                 include_args.append(command_args[idx + 1])
         compile_args[d['file']] = include_args
+    
+    class_to_methods = {}
+    path_to_includes = {}
+    gen_targets = []
     index = clang.cindex.Index.create()
     for f in paths:
-        structs = []
         includes = []
 
         echo(f"Parsing {f}")
@@ -138,8 +145,33 @@ def parse(compile_commands_path, paths):
         includes.sort()
 
         all_nodes = translation_unit.cursor.get_children()
-        all_methods = [m for m in all_nodes if m.location.file != None and m.location.file.name == f and m.kind == CursorKind.CXX_METHOD]
+        all_methods = list([m for m in all_nodes if m.location.file != None and m.location.file.name == f and m.kind == CursorKind.CXX_METHOD])
+        
         for m in all_methods:
+            method_class = find_method_class(m)
+            if method_class in class_to_methods:
+                class_to_methods[method_class].append(m)
+            else:
+                class_to_methods[method_class] = [m]
+        
+        path_to_includes[f] = includes
+    
+    for c in class_to_methods:
+        gen_target = {}
+        structs = []
+        includes = []
+        
+        for m in class_to_methods[c]:
             struct = create_struct_from_method(m)
             structs.append(struct)
-    return includes, structs
+            includes += path_to_includes[m.location.file.name]
+        
+        includes = list(set(includes))
+        includes.sort()
+
+        gen_target['structs'] = structs
+        gen_target['qualified_name'] = fully_qualified(c).split('::')
+        gen_target['includes'] = includes
+        gen_targets.append(gen_target)
+    
+    return gen_targets

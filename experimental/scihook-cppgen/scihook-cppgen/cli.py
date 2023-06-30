@@ -28,14 +28,18 @@ def scihook(ctx):
 
 
 @scihook.command()
-@click.option("--compile-commands", "-cc", help="Path to compile_commands.json")
 @click.option("--dry-run", "-dr", is_flag=True, help="Print file content to be generated instead of generating it")
-@click.argument("filename")
-@click.argument("paths", nargs=-1)
+@click.argument("compile-commands-path")
+@click.argument("source-files-paths", nargs=-1)
 @click.pass_context
-def genctx(ctx, compile_commands, dry_run, filename, paths):
-    includes, structs = parser.parse(compile_commands, paths)
-    generator.generate_context_file(filename, snake_case(filename.split('/')[-1].split('.')[0]), includes, structs, dry_run)
+def genctx(ctx, dry_run, compile_commands_path, source_files_paths):
+    gen_targets = parser.parse(compile_commands_path, source_files_paths)
+    for t in gen_targets:
+        generator.generate_context_file(
+            t['qualified_name'],
+            t['includes'],
+            t['structs'],
+            dry_run)
 
 scihook.add_command(genctx)
 

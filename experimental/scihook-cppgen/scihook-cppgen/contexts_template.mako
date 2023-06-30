@@ -35,7 +35,7 @@ struct ${s['name']} : SciHook::SciHookExecutionContext
 };
 
 % endfor
-PYBIND11_EMBEDDED_MODULE(${module_name}, m)
+PYBIND11_EMBEDDED_MODULE(${qualified_name[-1]}, m)
 {
 % for s in structs:
   pybind11::class_<${s['name']}, std::shared_ptr<${s['name']}>, SciHook::SciHookExecutionContext>(m, "${s['name']}")
