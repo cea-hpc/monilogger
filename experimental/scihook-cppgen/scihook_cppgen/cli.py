@@ -30,10 +30,11 @@ def scihook(ctx):
 @scihook.command()
 @click.option("--dry-run", "-dr", is_flag=True, help="Print file content to be generated instead of generating it")
 @click.option("--output-path", "-o", help="Output path of generated files (defaults to current folder)", default='.')
+@click.option("--include-prefix", "-ip", help="Include path prefix for generated files (defaults to empty path)", default='')
 @click.argument("compile-commands-path")
 @click.argument("source-files-paths", nargs=-1)
 @click.pass_context
-def genctx(ctx, dry_run, output_path, compile_commands_path, source_files_paths):
+def genctx(ctx, dry_run, output_path, include_prefix, compile_commands_path, source_files_paths):
     gen_targets = parser.parse(compile_commands_path, source_files_paths)
     for t in gen_targets:
         generator.generate_context_file(
@@ -41,6 +42,7 @@ def genctx(ctx, dry_run, output_path, compile_commands_path, source_files_paths)
             t['includes'],
             t['structs'],
             output_path,
+            include_prefix,
             dry_run)
 
 scihook.add_command(genctx)

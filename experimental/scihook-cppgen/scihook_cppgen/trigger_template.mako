@@ -1,7 +1,7 @@
 #ifndef ${header}
 #define ${header}
 
-#include <${f"{qualified_name[-1]}ExecutionContexts.h"}>
+#include <${f"{include_prefix}/" if include_prefix else ''}${f"{qualified_name[-1]}ExecutionContexts.h"}>
 
 <% len_structs = len(structs) - 1 %>\
 #define DECLARE_${'_'.join([s.upper() for s in qualified_name])}_EVENTS ${'\\'}

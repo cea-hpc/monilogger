@@ -3,7 +3,7 @@ from click import echo
 import os
 import sys
 
-def generate_context_file(qualified_name, includes, structs, output_path, dry_run):
+def generate_context_file(qualified_name, includes, structs, output_path, include_prefix, dry_run):
     path_to_templates = f'{os.path.dirname(os.path.abspath(sys.argv[0]))}/'
 
     tpl_contexts = Template(filename=f'{path_to_templates}/contexts_template.mako')
@@ -17,6 +17,7 @@ def generate_context_file(qualified_name, includes, structs, output_path, dry_ru
     tpl_triggers = Template(filename=f'{path_to_templates}/trigger_template.mako')
     text_triggers = tpl_triggers.render(
             qualified_name=qualified_name,
+            include_prefix=include_prefix,
             structs=structs,
             base_event=f"{'_'.join([s.upper() for s in qualified_name])}",
             header=f"{'_'.join([s.upper() for s in qualified_name])}TRIGGERS_H"
