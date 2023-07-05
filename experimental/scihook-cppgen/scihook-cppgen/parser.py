@@ -101,6 +101,7 @@ def create_struct_from_method(method):
     struct = {}
     struct['class'] = '::'.join(fully_qualified(method).split('::')[:-1])
     struct['method'] = method.spelling
+    struct['isConst'] = method.is_const_method()
     struct['name'] = f"{''.join(map(lambda s: s.capitalize(), fully_qualified(method).split('::')))}ExecutionContext"
     locals = []
     for a in method.get_arguments():
