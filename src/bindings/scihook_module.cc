@@ -21,17 +21,4 @@ PYBIND11_MODULE(_scihook, m) {
     {
         SciHook::trigger(event_id, scope);
     });
-
-    py::class_<SciHook::DataFlowDict>(m, "DataFlowDict")
-        .def("__bool__", [](const SciHook::DataFlowDict &self) -> bool { return !self.empty(); })
-        .def("__iter__", [](const SciHook::DataFlowDict &self) { return self.iter(); }, py::keep_alive<0, 1>())
-        .def("__getitem__", [](const SciHook::DataFlowDict &self, const py::object &key) -> std::vector<py::object> {
-                return self.get(key);
-            },
-            py::return_value_policy::reference_internal
-        )
-        .def("__contains__", [](const SciHook::DataFlowDict &self, const py::object &key) -> bool {
-            return self.contains(key);
-        });
-    
 }
